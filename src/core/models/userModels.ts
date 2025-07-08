@@ -5,7 +5,7 @@ export enum RoleType {
 }
 
 export interface User {
-  // id: string;   
+  id: string;   
   email: string;
   phone: string;
   firstName: string;
@@ -21,7 +21,7 @@ export interface AuthResponse {
 }
 
 export interface RegisterRequest {
-  id: string;
+  // id: string;
   email: string;
   password: string;
   phone: string;
@@ -45,40 +45,11 @@ export interface UpdateUserImageDto {
 }
 
 export interface UpdateUserDto {
-  firstName?: string;
-  lastName?: string;
-  phone?: string;
-  email?: string;
-  profileImage?: string;
+  email: string;
+  phone: string;
+  firstName: string;
+  lastName: string;
+  role: RoleType;
+  // profileImage?: File;
+  profileImage?: File | null;
 }
-
-// export interface UserDto {
-//   email: string;
-//   password: string;
-//   firstName: string;
-//   lastName: string;
-//   phone: string;
-//   role: Role;
-//   profilePhoto?: string | FormData;
-//   fcmToken?: string;
-// }
-
-// export interface LoginDto {
-//   emailorPhone: string;
-//   password: string;
-// }
-
-// export interface User {
-//   id: string;
-//   email: string;
-//   firstName: string;
-//   lastName: string;
-//   phone: string;
-//   role: Role;
-//   profileImage?: string;
-// }
-
-// export enum Role {
-//   CUSTOMER = "CUSTOMER",
-//   DRIVER = "DRIVER",
-// }
