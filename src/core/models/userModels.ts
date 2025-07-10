@@ -19,16 +19,14 @@ export interface AuthResponse {
   user: User;
   accessToken: string;
 }
-
 export interface RegisterRequest {
-  // id: string;
   email: string;
   password: string;
   phone: string;
   firstName: string;
   lastName: string;
   role: RoleType;
-  profileImage?: File;
+  profileImage?: File;  
 }
 
 export interface UpdateFcmTokenDto {
@@ -45,11 +43,10 @@ export interface UpdateUserImageDto {
 }
 
 export interface UpdateUserDto {
-  email: string;
-  phone: string;
-  firstName: string;
-  lastName: string;
-  role: RoleType;
-  // profileImage?: File;
-  profileImage?: File | null;
+  firstName?: string;
+  lastName?: string;
+  phone?: string;
+  email?: string;
+  profileImage?: string; 
 }
+

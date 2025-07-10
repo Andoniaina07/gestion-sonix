@@ -3,12 +3,14 @@ import {
   registerUser,
   getAllUsers,
   getUserProfile,
-  updateProfile,
   changePassword,
   saveFcmTokenAction,
   uploadUserImageAction,
+  fetchUser,
+  saveUser
 } from "../actions/userActions";
 import { User } from "../models/userModels";
+
 
 interface UserState {
   users: User[];
@@ -30,8 +32,10 @@ const userSlice = createSlice({
   name: "user",
   initialState,
   reducers: {
-    clearUserError(state) {
+    clearUserState: (state) => {
+      state.loading = false;
       state.error = null;
+      state.success = false;
     },
     resetPasswordState: (state) => {
       state.loading = false;
@@ -84,15 +88,27 @@ const userSlice = createSlice({
       })
 
       // 👉 Update user profile
-      .addCase(updateProfile.pending, (state) => {
+      .addCase(fetchUser.pending, (state) => {
         state.loading = true;
         state.error = null;
       })
-      .addCase(updateProfile.fulfilled, (state, action: PayloadAction<User>) => {
+      .addCase(fetchUser.fulfilled, (state, action) => {
         state.loading = false;
         state.currentUser = action.payload;
       })
-      .addCase(updateProfile.rejected, (state, action) => {
+      .addCase(fetchUser.rejected, (state, action) => {
+        state.loading = false;
+        state.error = action.payload as string;
+      })
+      .addCase(saveUser.pending, (state) => {
+        state.loading = true;
+        state.error = null;
+      })
+      .addCase(saveUser.fulfilled, (state, action) => {
+        state.loading = false;
+        state.currentUser = action.payload;
+      })
+      .addCase(saveUser.rejected, (state, action) => {
         state.loading = false;
         state.error = action.payload as string;
       })
@@ -139,5 +155,5 @@ const userSlice = createSlice({
   },
 });
 
-export const { clearUserError,resetPasswordState } = userSlice.actions;
+export const { clearUserState,resetPasswordState } = userSlice.actions;
 export default userSlice.reducer;

@@ -10,7 +10,8 @@ import {
   registerService,
   fetchUsers,
   fetchUserProfile,
-  updateUserProfile,
+  getUserById,
+  updateUser,
   updateUserPassword,
   saveFcmToken,
   uploadUserImage,
@@ -18,15 +19,20 @@ import {
 
 export const registerUser = createAsyncThunk<User, RegisterRequest>(
   "user/register",
-async (formData, { rejectWithValue }) => {
+  async (formData, { rejectWithValue }) => {
     try {
       const response = await registerService(formData);
       return response.user;
     } catch (error: any) {
-      return rejectWithValue(error.response?.data?.message || "Erreur d'inscription");
+      const message = error.response?.data?.message;
+      if (Array.isArray(message)) {
+        return rejectWithValue(message.join("\n"));
+      }
+      return rejectWithValue(message || "Erreur d'inscription");
     }
   }
 );
+
 
 // Tous les utilisateurs
 export const getAllUsers = createAsyncThunk<User[]>(
@@ -52,17 +58,26 @@ export const getUserProfile = createAsyncThunk<User>(
   }
 );
 
-// Mise à jour profil
-export const updateProfile = createAsyncThunk<User, UpdateUserDto>(
-  "user/updateProfile",
-  async (formData, { rejectWithValue }) => {
+// Mise à jour profile
+export const fetchUser = createAsyncThunk("user/fetchUser", async (id: string, thunkAPI) => {
+  try {
+    return await getUserById(id);
+  } catch (err) {
+    return thunkAPI.rejectWithValue("Erreur lors du chargement de l'utilisateur");
+  }
+});
+
+export const saveUser = createAsyncThunk(
+  "user/saveUser",
+  async (data: UpdateUserDto, thunkAPI) => {
     try {
-      return await updateUserProfile(formData);
-    } catch (error: any) {
-      return rejectWithValue(error.response?.data?.message || "Erreur de mise à jour du profil");
+      return await updateUser(data); // Appelle la fonction API correspondante
+    } catch (err) {
+      return thunkAPI.rejectWithValue("Erreur lors de la mise à jour");
     }
   }
 );
+
 
 // Mise à jour mot de passe
 export const changePassword = createAsyncThunk<void, UpdatePasswordDto>(

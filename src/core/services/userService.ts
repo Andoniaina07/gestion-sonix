@@ -38,21 +38,21 @@ export const fetchUserProfile = async (): Promise<User> => {
   return response.data;
 };
 
+export const getUserById = async (id: string): Promise<User> => {
+  const response = await api.get(`/users/${id}`);
+  return response.data;
+};
 
-export const updateUserProfile = async (data: UpdateUserDto): Promise<User> => {
-  const token = localStorage.getItem("token");
-
+export const updateUser = async (data: UpdateUserDto): Promise<User> => {
   const formData = new FormData();
-  if (data.firstName) formData.append("firstName", data.firstName);
-  if (data.lastName) formData.append("lastName", data.lastName);
-  if (data.email) formData.append("email", data.email);
-  if (data.phone) formData.append("phone", data.phone);
-  if (data.role) formData.append("role", data.role); 
-  if (data.profileImage) formData.append("profileImage", data.profileImage);
+  Object.entries(data).forEach(([key, value]) => {
+    if (value !== undefined && value !== null) {
+      formData.append(key, value as string | Blob);
+    }
+  });
 
-  const response = await api.put<User>("/users/profile", formData, {
+  const response = await api.put(`/users/profile`, formData, {
     headers: {
-      Authorization: `Bearer ${token}`,
       "Content-Type": "multipart/form-data",
     },
   });

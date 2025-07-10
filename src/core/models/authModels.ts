@@ -20,7 +20,6 @@ export interface User {
   firstName: string;
   lastName: string;
   role: RoleType;
-  profileImageUrl?: string;
   createdAt: string;
 }
 

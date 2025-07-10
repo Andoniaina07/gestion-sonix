@@ -17,23 +17,47 @@ import {
 } from "@mui/material";
 import { DataGrid, GridColDef } from "@mui/x-data-grid";
 import { useAppDispatch, useAppSelector } from "../../app/hooks";
-import { registerUser, getAllUsers } from "../../core/actions/userActions";
-import { RegisterRequest, RoleType, User } from "../../core/models/userModels";
+import {
+  registerUser,
+  getAllUsers,
+  saveUser,
+  fetchUser,
+} from "../../core/actions/userActions";
+import {
+  RegisterRequest,
+  RoleType,
+  User,
+  UpdateUserDto,
+} from "../../core/models/userModels";
 import DashboardLayout from "../dasboard/DashboardLayout";
 import { SelectChangeEvent } from "@mui/material";
-import { clearUserError } from "../../core/slice/userSlice";
+import { clearUserState } from "../../core/slice/userSlice";
 import { toast } from "react-toastify";
 import VisibilityIcon from "@mui/icons-material/Visibility";
-import ChangePasswordForm from "../../pages/gestionCompte/ChangePasswordForm";
+import ChangePasswordForm from "./ChangePasswordForm";
+import { AnyAction } from "@reduxjs/toolkit";
+import { IMAGE_SERVER } from "../../config/config";
+
+const convertFileToBase64 = (file: File): Promise<string> =>
+  new Promise((resolve, reject) => {
+    const reader = new FileReader();
+    reader.readAsDataURL(file);
+    reader.onload = () => resolve(reader.result as string);
+    reader.onerror = reject;
+  });
 
 const UserForm: React.FC = () => {
   const dispatch = useAppDispatch();
   const users = useAppSelector((state) => state.user.users);
+  const currentUser = useAppSelector((state) => state.user.currentUser);
   const loading = useAppSelector((state) => state.user.loading);
 
   const [open, setOpen] = useState(false);
+  const [editMode, setEditMode] = useState(false);
+  const [editingUserId, setEditingUserId] = useState<string | null>(null);
   const [viewDialogOpen, setViewDialogOpen] = useState(false);
   const [changePasswordOpen, setChangePasswordOpen] = useState(false);
+
   const [formUser, setFormUser] = useState<RegisterRequest>({
     email: "",
     password: "",
@@ -44,25 +68,44 @@ const UserForm: React.FC = () => {
     profileImage: undefined,
   });
 
-  const [viewUser, setViewUser] = useState<RegisterRequest | null>(null);
+  const [imagePreview, setImagePreview] = useState<string>("");
   const [searchTerm, setSearchTerm] = useState("");
-  const [paginationModel, setPaginationModel] = useState({
-    pageSize: 10,
-    page: 0,
-  });
+  const [paginationModel, setPaginationModel] = useState({ pageSize: 10, page: 0 });
+
+  // Chargement initial des utilisateurs
+  useEffect(() => {
+    dispatch(getAllUsers());
+  }, [dispatch]);
 
   useEffect(() => {
-    if (users.length === 0) {
-      dispatch(getAllUsers());
+    if (editMode && editingUserId) {
+      dispatch(fetchUser(editingUserId));
     }
-  }, [dispatch, users.length]);
+  }, [dispatch, editMode, editingUserId]);
 
-  const handleChange = (
-    e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement>
-  ) => {
-    const { name, value, files } = e.target as HTMLInputElement;
-    if (name === "profileImage" && files && files.length > 0) {
+  useEffect(() => {
+    if (editMode && currentUser) {
+      setFormUser({
+        email: currentUser.email,
+        phone: currentUser.phone,
+        firstName: currentUser.firstName,
+        lastName: currentUser.lastName,
+        role: currentUser.role,
+        password: "",
+        profileImage: undefined,
+      });
+
+      if (currentUser.profileImageUrl) {
+        setImagePreview(`${IMAGE_SERVER}/api/users/profile/${currentUser.profileImageUrl}`);
+      }
+    }
+  }, [currentUser, editMode]);
+
+  const handleChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const { name, value, files } = e.target;
+    if (name === "profileImage" && files && files[0]) {
       setFormUser((prev) => ({ ...prev, profileImage: files[0] }));
+      setImagePreview(URL.createObjectURL(files[0]));
     } else {
       setFormUser((prev) => ({ ...prev, [name]: value }));
     }
@@ -70,32 +113,69 @@ const UserForm: React.FC = () => {
 
   const handleSelectChange = (e: SelectChangeEvent) => {
     const { name, value } = e.target;
-    setFormUser((prev) => ({
-      ...prev,
-      [name as string]: value as RoleType,
-    }));
+    setFormUser((prev) => ({ ...prev, [name]: value as RoleType }));
   };
 
-  const handleSubmit = () => {
-    const { firstName, lastName, email, password } = formUser;
-    if (!firstName || !lastName || !email || !password) {
-      toast.error("Veuillez remplir tous les champs obligatoires.");
+  const handleSubmit = async () => {
+    const { firstName, lastName, email, password, phone, profileImage } = formUser;
+
+    if (!firstName || !lastName || !email) {
+      toast.error("Champs obligatoires manquants.");
       return;
     }
 
-    dispatch(registerUser(formUser)).then((action) => {
-      if (registerUser.fulfilled.match(action)) {
-        toast.success("Utilisateur ajouté avec succès !");
-        handleClose();
-      } else {
-        toast.error("Erreur lors de l'ajout de l'utilisateur");
+    if (editMode && editingUserId) {
+      let base64Image: string | undefined = undefined;
+      if (profileImage instanceof File) {
+        try {
+          base64Image = await convertFileToBase64(profileImage);
+        } catch {
+          toast.error("Erreur conversion image");
+          return;
+        }
       }
-    });
+
+      const updateData: UpdateUserDto = {
+        email,
+        phone,
+        firstName,
+        lastName,
+        profileImage: base64Image,
+      };
+
+      dispatch(saveUser(updateData)).then((action: AnyAction) => {
+        if (saveUser.fulfilled.match(action)) {
+          toast.success("Utilisateur modifié !");
+          handleClose();
+          dispatch(getAllUsers());
+        } else {
+          toast.error("Erreur de modification.");
+        }
+      });
+
+    } else {
+      if (!password) {
+        toast.error("Mot de passe requis.");
+        return;
+      }
+
+      dispatch(registerUser(formUser)).then((action: AnyAction) => {
+        if (registerUser.fulfilled.match(action)) {
+          toast.success("Utilisateur ajouté !");
+          handleClose();
+          dispatch(getAllUsers());
+        } else {
+          toast.error("Erreur lors de l'ajout.");
+        }
+      });
+    }
   };
 
   const handleClose = useCallback(() => {
     setOpen(false);
-    dispatch(clearUserError());
+    setEditMode(false);
+    setEditingUserId(null);
+    dispatch(clearUserState());
     setFormUser({
       email: "",
       password: "",
@@ -105,13 +185,8 @@ const UserForm: React.FC = () => {
       role: RoleType.CUSTOMER,
       profileImage: undefined,
     });
+    setImagePreview("");
   }, [dispatch]);
-
-  useEffect(() => {
-    if (!open) {
-      dispatch(clearUserError());
-    }
-  }, [dispatch, open]);
 
   const columns: GridColDef[] = [
     { field: "firstName", headerName: "Prénom", flex: 1 },
@@ -125,20 +200,34 @@ const UserForm: React.FC = () => {
       flex: 1,
       sortable: false,
       renderCell: (params) => (
-        <IconButton
-          color="primary"
-          onClick={() => {
-            setViewUser(params.row);
-            setViewDialogOpen(true);
-          }}
-        >
-          <VisibilityIcon />
-        </IconButton>
+        <>
+          <IconButton
+            color="primary"
+            onClick={() => {
+              setViewDialogOpen(true);
+              setFormUser(params.row);
+              if (params.row.profileImage) {
+                setImagePreview(`${IMAGE_SERVER}/api/users/profile/${params.row.profileImage}`);
+              }
+            }}
+          >
+            <VisibilityIcon />
+          </IconButton>
+          <Button
+            size="small"
+            onClick={() => {
+              setEditMode(true);
+              setEditingUserId(params.row.id);
+              setOpen(true);
+            }}
+          >
+            Modifier
+          </Button>
+        </>
       ),
     },
   ];
 
-  // ✅ Filtrage par recherche
   const filteredUsers = users.filter((user: User) => {
     const fullText = `${user.firstName} ${user.lastName} ${user.email}`.toLowerCase();
     return fullText.includes(searchTerm.toLowerCase());
@@ -160,7 +249,6 @@ const UserForm: React.FC = () => {
           </Button>
           <TextField
             label="Rechercher..."
-            variant="outlined"
             value={searchTerm}
             onChange={(e) => setSearchTerm(e.target.value)}
             size="small"
@@ -176,61 +264,58 @@ const UserForm: React.FC = () => {
           onPaginationModelChange={setPaginationModel}
           pageSizeOptions={[5, 10, 20]}
           autoHeight
-          pagination
           disableRowSelectionOnClick
           sx={{ backgroundColor: "#fff", borderRadius: 2 }}
         />
 
-        {/* Dialog - Ajout d'utilisateur */}
+        {/* ➕ MODAL AJOUT / MODIFICATION */}
         <Dialog open={open} onClose={handleClose} fullWidth maxWidth="sm">
-          <DialogTitle>Ajouter un utilisateur</DialogTitle>
+          <DialogTitle>{editMode ? "Modifier l'utilisateur" : "Ajouter un utilisateur"}</DialogTitle>
           <DialogContent dividers>
-            <TextField fullWidth name="firstName" label="Prénom" margin="normal" value={formUser.firstName} onChange={handleChange} />
-            <TextField fullWidth name="lastName" label="Nom" margin="normal" value={formUser.lastName} onChange={handleChange} />
-            <TextField fullWidth name="email" label="Email" type="email" margin="normal" value={formUser.email} onChange={handleChange} />
-            <TextField fullWidth name="password" label="Mot de passe" type="password" margin="normal" value={formUser.password} onChange={handleChange} />
-            <TextField fullWidth name="phone" label="Téléphone" margin="normal" value={formUser.phone} onChange={handleChange} />
+            {imagePreview && (
+              <Box my={2}>
+                <img src={imagePreview} alt="preview" width="100" height="100" style={{ borderRadius: "50%" }} />
+              </Box>
+            )}
+            <TextField fullWidth name="firstName" label="Prénom" value={formUser.firstName} onChange={handleChange} margin="normal" />
+            <TextField fullWidth name="lastName" label="Nom" value={formUser.lastName} onChange={handleChange} margin="normal" />
+            <TextField fullWidth name="email" label="Email" value={formUser.email} onChange={handleChange} margin="normal" />
+            {!editMode && (
+              <TextField fullWidth name="password" label="Mot de passe" type="password" value={formUser.password} onChange={handleChange} margin="normal" />
+            )}
+            <TextField fullWidth name="phone" label="Téléphone" value={formUser.phone} onChange={handleChange} margin="normal" />
             <FormControl fullWidth margin="normal">
               <InputLabel>Rôle</InputLabel>
-              <Select name="role" value={formUser.role} onChange={handleSelectChange} label="Rôle">
+              <Select name="role" value={formUser.role} onChange={handleSelectChange}>
                 {Object.values(RoleType).map((role) => (
-                  <MenuItem key={role} value={role}>
-                    {role}
-                  </MenuItem>
+                  <MenuItem key={role} value={role}>{role}</MenuItem>
                 ))}
               </Select>
             </FormControl>
-            <input type="file" name="profileImage" accept="image/*" onChange={handleChange} style={{ marginTop: 16 }} />
+            <Button component="label" variant="outlined" sx={{ mt: 2 }}>
+              Choisir une image
+              <input type="file" hidden name="profileImage" accept="image/*" onChange={handleChange} />
+            </Button>
           </DialogContent>
           <DialogActions>
             <Button onClick={handleClose}>Annuler</Button>
-            <Button onClick={handleSubmit} variant="contained" disabled={loading} startIcon={loading ? <CircularProgress size={20} /> : null}>
-              Enregistrer
+            <Button onClick={handleSubmit} disabled={loading} variant="contained" startIcon={loading ? <CircularProgress size={20} /> : null}>
+              {editMode ? "Mettre à jour" : "Enregistrer"}
             </Button>
           </DialogActions>
         </Dialog>
 
-        {/* Dialog - Voir utilisateur */}
+        {/* 👁️ MODAL AFFICHAGE */}
         <Dialog open={viewDialogOpen} onClose={() => setViewDialogOpen(false)} fullWidth maxWidth="sm">
-          <DialogTitle>Informations du compte</DialogTitle>
+          <DialogTitle>Profil Utilisateur</DialogTitle>
           <DialogContent dividers>
-            {viewUser && (
-              <>
-                <Typography>Nom : {viewUser.lastName}</Typography>
-                <Typography>Prénom : {viewUser.firstName}</Typography>
-                <Typography>Email : {viewUser.email}</Typography>
-                <Typography>Téléphone : {viewUser.phone}</Typography>
-                <Typography>Rôle : {viewUser.role}</Typography>
-                {viewUser.profileImage && typeof viewUser.profileImage === "string" && (
-                  <img
-                    src={viewUser.profileImage}
-                    alt={`${viewUser.firstName} ${viewUser.lastName}`}
-                    width="100"
-                    height="100"
-                    style={{ borderRadius: "50%" }}
-                  />
-                )}
-              </>
+            <Typography>Nom : {formUser.lastName}</Typography>
+            <Typography>Prénom : {formUser.firstName}</Typography>
+            <Typography>Email : {formUser.email}</Typography>
+            <Typography>Téléphone : {formUser.phone}</Typography>
+            <Typography>Rôle : {formUser.role}</Typography>
+            {imagePreview && (
+              <img src={imagePreview} alt="avatar" width="100" height="100" style={{ borderRadius: "50%" }} />
             )}
           </DialogContent>
           <DialogActions>
@@ -238,7 +323,7 @@ const UserForm: React.FC = () => {
           </DialogActions>
         </Dialog>
 
-        {/* Dialog - Changer mot de passe */}
+        {/* 🔒 MODAL CHANGEMENT DE MOT DE PASSE */}
         <Dialog open={changePasswordOpen} onClose={() => setChangePasswordOpen(false)} fullWidth maxWidth="sm">
           <DialogTitle>Changer mon mot de passe</DialogTitle>
           <DialogContent dividers>
