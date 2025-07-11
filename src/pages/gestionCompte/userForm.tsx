@@ -14,6 +14,7 @@ import {
   MenuItem,
   IconButton,
   CircularProgress,
+  InputAdornment,
 } from "@mui/material";
 import { DataGrid, GridColDef } from "@mui/x-data-grid";
 import { useAppDispatch, useAppSelector } from "../../app/hooks";
@@ -34,9 +35,13 @@ import { SelectChangeEvent } from "@mui/material";
 import { clearUserState } from "../../core/slice/userSlice";
 import { toast } from "react-toastify";
 import VisibilityIcon from "@mui/icons-material/Visibility";
+import EditIcon from "@mui/icons-material/Edit";
 import ChangePasswordForm from "./ChangePasswordForm";
 import { AnyAction } from "@reduxjs/toolkit";
 import { IMAGE_SERVER } from "../../config/config";
+import PersonAddAltIcon from "@mui/icons-material/PersonAddAlt";
+import LockResetIcon from "@mui/icons-material/LockReset";
+import SearchIcon from "@mui/icons-material/Search";
 
 const convertFileToBase64 = (file: File): Promise<string> =>
   new Promise((resolve, reject) => {
@@ -72,7 +77,6 @@ const UserForm: React.FC = () => {
   const [searchTerm, setSearchTerm] = useState("");
   const [paginationModel, setPaginationModel] = useState({ pageSize: 10, page: 0 });
 
-  // Chargement initial des utilisateurs
   useEffect(() => {
     dispatch(getAllUsers());
   }, [dispatch]);
@@ -213,16 +217,16 @@ const UserForm: React.FC = () => {
           >
             <VisibilityIcon />
           </IconButton>
-          <Button
-            size="small"
+          <IconButton
+            color="secondary"
             onClick={() => {
               setEditMode(true);
               setEditingUserId(params.row.id);
               setOpen(true);
             }}
           >
-            Modifier
-          </Button>
+            <EditIcon />
+          </IconButton>
         </>
       ),
     },
@@ -241,10 +245,18 @@ const UserForm: React.FC = () => {
         </Typography>
 
         <Box mt={2} mb={2} display="flex" gap={2}>
-          <Button variant="contained" onClick={() => setOpen(true)}>
+          <Button
+            variant="contained"
+            onClick={() => setOpen(true)}
+            startIcon={<PersonAddAltIcon />}
+          >
             Ajouter un utilisateur
           </Button>
-          <Button variant="outlined" onClick={() => setChangePasswordOpen(true)}>
+          <Button
+            variant="outlined"
+            onClick={() => setChangePasswordOpen(true)}
+            startIcon={<LockResetIcon />}
+          >
             Changer mon mot de passe
           </Button>
           <TextField
@@ -253,6 +265,13 @@ const UserForm: React.FC = () => {
             onChange={(e) => setSearchTerm(e.target.value)}
             size="small"
             sx={{ ml: "auto" }}
+            InputProps={{
+              startAdornment: (
+                <InputAdornment position="start">
+                  <SearchIcon />
+                </InputAdornment>
+              ),
+            }}
           />
         </Box>
 

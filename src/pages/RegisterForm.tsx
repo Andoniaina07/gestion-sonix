@@ -63,7 +63,7 @@ const RegisterForm = () => {
     try {
       const result = await dispatch(register(form));
       if (register.fulfilled.match(result)) {
-        navigate("/dashboard");
+        navigate("/gestion-compte");
       } else if (register.rejected.match(result)) {
         setError(result.payload || "Erreur lors de l'inscription");
       }

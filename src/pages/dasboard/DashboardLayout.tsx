@@ -1,8 +1,14 @@
 import React, { ReactNode } from "react";
-import { Link, useNavigate } from "react-router-dom";
+import { NavLink, useNavigate } from "react-router-dom";
 import { useAppDispatch, useAppSelector } from "../../app/hooks";
 import { logout } from "../../core/slice/authSlice";
-// import logo from "../../assets/logo.png"; 
+import {
+  AccountCircle,
+  Logout,
+  ManageAccounts,
+  TwoWheeler,
+} from "@mui/icons-material";
+import { IconButton, Tooltip } from "@mui/material";
 
 interface Props {
   children: ReactNode;
@@ -23,17 +29,23 @@ const DashboardLayout: React.FC<Props> = ({ children }) => {
       {/* Navbar */}
       <nav className="navbar navbar-expand-lg navbar-dark bg-primary fixed-top">
         <div className="container-fluid">
-          <Link to="/" className="navbar-brand fw-bold d-flex align-items-center">
-            {/* <img src={logo} alt="Logo" style={{ height: 34, marginRight: 10 }} /> */}
-            <span>MotoApp</span>
-          </Link>
+          <NavLink to="/" className="navbar-brand fw-bold d-flex align-items-center">
+            <TwoWheeler style={{ marginRight: "8px", color: "white" }} />
+            <span className="text-white">MotoApp</span>
+          </NavLink>
           <div className="d-flex align-items-center">
-            <span className="text-white me-4">
-              {user?.firstName || "Utilisateur"}
-            </span>
-            <button onClick={handleLogout} className="btn btn-sm btn-light">
-              Déconnexion
-            </button>
+            <Tooltip title={user?.firstName || "Utilisateur"}>
+              <div className="text-white me-3 d-flex align-items-center">
+                <AccountCircle className="me-1" />
+                <span>{user?.firstName || "Utilisateur"}</span>
+              </div>
+            </Tooltip>
+
+            <Tooltip title="Déconnexion">
+              <IconButton onClick={handleLogout} color="inherit">
+                <Logout style={{ color: "white" }} />
+              </IconButton>
+            </Tooltip>
           </div>
         </div>
       </nav>
@@ -46,24 +58,30 @@ const DashboardLayout: React.FC<Props> = ({ children }) => {
         >
           <ul className="nav flex-column pt-4 px-2">
             <li className="nav-item mb-3">
-              <Link to="/acceuil" className="nav-link text-dark">
-                🏠 Accueil
-              </Link>
+              <NavLink
+                to="/gestion-compte"
+                className={({ isActive }) =>
+                  `nav-link d-flex align-items-center text-dark ${
+                    isActive ? "fw-bold bg-primary text-white rounded px-2" : ""
+                  }`
+                }
+              >
+                <ManageAccounts className="me-2" />
+                <span className="fw-bold">Gestion des comptes</span>
+              </NavLink>
             </li>
             <li className="nav-item mb-3">
-              <Link to="/gestion-compte" className="nav-link text-dark">
-                👤 Gestion des comptes
-              </Link>
-            </li>
-            <li className="nav-item mb-3">
-              <Link to="/intervenant" className="nav-link text-dark">
-                📅 Livraison 
-              </Link>
-            </li>
-            <li className="nav-item mb-3">
-              <Link to="/entretien" className="nav-link text-dark">
-                🛠️ Course
-              </Link>
+              <NavLink
+                to="/livraison"
+                className={({ isActive }) =>
+                  `nav-link d-flex align-items-center text-dark ${
+                    isActive ? "fw-bold bg-primary text-white rounded px-2" : ""
+                  }`
+                }
+              >
+                <TwoWheeler className="me-2" />
+                <span className="fw-bold">Livraison</span>
+              </NavLink>
             </li>
           </ul>
         </div>
@@ -81,3 +99,5 @@ const DashboardLayout: React.FC<Props> = ({ children }) => {
 };
 
 export default DashboardLayout;
+
+
