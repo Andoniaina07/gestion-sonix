@@ -11,7 +11,7 @@ import {
   Alert,
   IconButton,
 } from "@mui/material";
-import { Visibility, VisibilityOff } from "@mui/icons-material";
+import { Visibility, VisibilityOff, TwoWheeler } from "@mui/icons-material";
 import { Link, useNavigate } from "react-router-dom";
 import { useAppDispatch } from "../app/hooks";
 import { login } from "../core/actions/authActions";
@@ -65,7 +65,9 @@ const LoginForm = () => {
     <Box
       sx={{
         minHeight: "100vh",
-        backgroundColor: "#f0f2f5",
+        backgroundImage: "url('/background.jpg')", // ← ajoute ton image ici (dans public/)
+        backgroundSize: "cover",
+        backgroundPosition: "center",
         display: "flex",
         justifyContent: "center",
         alignItems: "center",
@@ -77,12 +79,16 @@ const LoginForm = () => {
           maxWidth: 400,
           width: "100%",
           p: 4,
-          backgroundColor: "#fff",
+          backgroundColor: "rgba(255,255,255,0.95)",
           borderRadius: 2,
-          boxShadow: 3,
+          boxShadow: 6,
         }}
       >
         <form onSubmit={handleSubmit}>
+          <Box display="flex" justifyContent="center" mb={1}>
+            <TwoWheeler sx={{ fontSize: 40, color: "#1976d2" }} />
+          </Box>
+
           <Typography variant="h5" align="center" gutterBottom>
             Connexion
           </Typography>

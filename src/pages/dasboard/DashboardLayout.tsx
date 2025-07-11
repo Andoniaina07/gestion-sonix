@@ -22,6 +22,26 @@ interface Props {
   children: ReactNode;
 }
 
+// Icône moto SVG personnalisée (pour la navbar uniquement)
+const MotoNavbarIcon: React.FC<{ size?: number; color?: string; className?: string }> = ({
+  size = 28,
+  color = "white",
+  className = "",
+}) => (
+  <svg
+    xmlns="http://www.w3.org/2000/svg"
+    height={size}
+    width={size}
+    viewBox="0 0 24 24"
+    fill={color}
+    className={className}
+    style={{ marginRight: "8px" }}
+  >
+    <path d="M0 0h24v24H0z" fill="none" />
+    <path d="M20.57 14.86C21.44 13.94 22 12.78 22 11.5 22 8.46 19.54 6 16.5 6c-.92 0-1.79.23-2.56.64l-2.3-2.3a.996.996 0 10-1.41 1.41l.95.95-1.42 1.41-2.04-2.04a.996.996 0 10-1.41 1.41l1.25 1.25A5.478 5.478 0 006 11.5c0 .93.23 1.79.64 2.56L3.11 18.6c-.4.4-.4 1.05 0 1.45.2.2.45.3.71.3s.51-.1.71-.29l3.53-3.53c.77.4 1.63.63 2.56.63 1.28 0 2.44-.56 3.36-1.43l4.59 4.59c.2.2.45.3.71.3s.51-.1.71-.29c.4-.4.4-1.05 0-1.45l-4.58-4.58zM6 13c-.83 0-1.5-.67-1.5-1.5S5.17 10 6 10s1.5.67 1.5 1.5S6.83 13 6 13zm10.5-1.5c0-.83.67-1.5 1.5-1.5s1.5.67 1.5 1.5S18.83 13 18 13s-1.5-.67-1.5-1.5z" />
+  </svg>
+);
+
 const DashboardLayout: React.FC<Props> = ({ children }) => {
   const dispatch = useAppDispatch();
   const navigate = useNavigate();
@@ -44,9 +64,12 @@ const DashboardLayout: React.FC<Props> = ({ children }) => {
         <NavLink
           to="/gestion-compte"
           className={({ isActive }) =>
-            `nav-link d-flex align-items-center text-dark ${
-              isActive ? "fw-bold bg-primary text-white rounded px-2" : ""
+            `nav-link d-flex align-items-center text-dark fw-bold rounded px-2 ${
+              isActive ? "text-white" : ""
             }`
+          }
+          style={({ isActive }) =>
+            isActive ? { backgroundColor: "#2C75FF" } : undefined
           }
           onClick={() => isMobile && toggleSidebar()}
         >
@@ -58,9 +81,12 @@ const DashboardLayout: React.FC<Props> = ({ children }) => {
         <NavLink
           to="/livraison"
           className={({ isActive }) =>
-            `nav-link d-flex align-items-center text-dark ${
-              isActive ? "fw-bold bg-primary text-white rounded px-2" : ""
+            `nav-link d-flex align-items-center text-dark fw-bold rounded px-2 ${
+              isActive ? "text-white" : ""
             }`
+          }
+          style={({ isActive }) =>
+            isActive ? { backgroundColor: "#2C75FF" } : undefined
           }
           onClick={() => isMobile && toggleSidebar()}
         >
@@ -74,7 +100,10 @@ const DashboardLayout: React.FC<Props> = ({ children }) => {
   return (
     <>
       {/* Navbar */}
-      <nav className="navbar navbar-expand-lg navbar-dark bg-primary fixed-top">
+      <nav
+        className="navbar navbar-expand-lg navbar-dark fixed-top"
+        style={{ backgroundColor: "#1560BD" }}
+      >
         <div className="container-fluid d-flex justify-content-between align-items-center">
           <div className="d-flex align-items-center">
             {isMobile && (
@@ -86,7 +115,7 @@ const DashboardLayout: React.FC<Props> = ({ children }) => {
               to="/"
               className="navbar-brand fw-bold d-flex align-items-center"
             >
-              <TwoWheeler style={{ marginRight: "8px", color: "white" }} />
+              <MotoNavbarIcon />
               <span className="text-white">MotoApp</span>
             </NavLink>
           </div>
