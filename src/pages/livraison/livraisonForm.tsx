@@ -8,6 +8,8 @@ import {
   Select,
   MenuItem,
   Stack,
+  useMediaQuery,
+  useTheme,
 } from "@mui/material";
 import { DataGrid, GridColDef } from "@mui/x-data-grid";
 import { useAppDispatch, useAppSelector } from "../../app/hooks";
@@ -23,6 +25,9 @@ const AllDeliveriesPage: React.FC = () => {
   const dispatch = useAppDispatch();
   const { deliveries, loading } = useAppSelector((state) => state.deliveries);
   const [filterStatus, setFilterStatus] = useState("ALL");
+
+  const theme = useTheme();
+  const isSmallScreen = useMediaQuery(theme.breakpoints.down("sm"));
 
   useEffect(() => {
     dispatch(fetchAllDeliveries());
@@ -53,25 +58,30 @@ const AllDeliveriesPage: React.FC = () => {
       ? deliveries
       : deliveries.filter((d: any) => d.status === filterStatus);
 
-  // 🧱 Définition des colonnes du tableau
   const columns: GridColDef[] = [
-    { field: "recipient_name", headerName: "Destinataire", flex: 1 },
-    { field: "recipient_phone", headerName: "Téléphone", flex: 1 },
-    { field: "pickup_address", headerName: "Adresse départ", flex: 1 },
-    { field: "delivery_address", headerName: "Adresse livraison", flex: 1 },
-    { field: "delivery_price", headerName: "Prix (Ar)", flex: 1 },
-    { field: "status", headerName: "Statut", flex: 1 },
+    { field: "recipient_name", headerName: "Destinataire", flex: 1, minWidth: 120 },
+    { field: "recipient_phone", headerName: "Téléphone", flex: 1, minWidth: 120 },
+    { field: "pickup_address", headerName: "Adresse départ", flex: 1, minWidth: 150 },
+    { field: "delivery_address", headerName: "Adresse livraison", flex: 1, minWidth: 150 },
+    { field: "delivery_price", headerName: "Prix (Ar)", flex: 1, minWidth: 100 },
+    { field: "status", headerName: "Statut", flex: 1, minWidth: 100 },
     {
       field: "actions",
       headerName: "Actions",
       flex: 1.5,
       sortable: false,
+      minWidth: 180,
       renderCell: (params) => (
-        <Stack direction="row" spacing={1}>
+        <Stack
+          direction={isSmallScreen ? "column" : "row"}
+          spacing={1}
+          sx={{ width: "100%" }}
+        >
           <Button
             size="small"
             variant="contained"
             color="primary"
+            fullWidth={isSmallScreen}
             onClick={() => handleConfirmAdmin(params.row.id)}
           >
             Admin
@@ -80,6 +90,7 @@ const AllDeliveriesPage: React.FC = () => {
             size="small"
             variant="contained"
             color="secondary"
+            fullWidth={isSmallScreen}
             onClick={() => handleConfirmDriver(params.row.id)}
           >
             Chauffeur
@@ -92,42 +103,59 @@ const AllDeliveriesPage: React.FC = () => {
   return (
     <DashboardLayout>
       <Box p={2}>
-        <Typography variant="h4" gutterBottom>
+        <Typography
+          variant="h4"
+          gutterBottom
+          align={isSmallScreen ? "center" : "left"}
+        >
           Toutes les livraisons
         </Typography>
 
-        {/* 🔍 Filtrer par statut */}
-        <FormControl fullWidth sx={{ mb: 2, maxWidth: 300 }}>
-          <InputLabel id="filter-label">Filtrer par statut</InputLabel>
-          <Select
-            labelId="filter-label"
-            value={filterStatus}
-            label="Filtrer par statut"
-            onChange={(e) => setFilterStatus(e.target.value)}
-          >
-            <MenuItem value="ALL">Tous</MenuItem>
-            <MenuItem value="PENDING">En attente</MenuItem>
-            <MenuItem value="IN_PROGRESS">En cours</MenuItem>
-            <MenuItem value="DELIVERED">Livrée</MenuItem>
-            <MenuItem value="CANCELED">Annulée</MenuItem>
-          </Select>
-        </FormControl>
+        <Box
+          display="flex"
+          flexDirection={isSmallScreen ? "column" : "row"}
+          justifyContent="space-between"
+          alignItems={isSmallScreen ? "stretch" : "center"}
+          mb={2}
+        >
+          <FormControl fullWidth sx={{ maxWidth: 300 }}>
+            <InputLabel id="filter-label">Filtrer par statut</InputLabel>
+            <Select
+              labelId="filter-label"
+              value={filterStatus}
+              label="Filtrer par statut"
+              onChange={(e) => setFilterStatus(e.target.value)}
+            >
+              <MenuItem value="ALL">Tous</MenuItem>
+              <MenuItem value="PENDING">En attente</MenuItem>
+              <MenuItem value="IN_PROGRESS">En cours</MenuItem>
+              <MenuItem value="DELIVERED">Livrée</MenuItem>
+              <MenuItem value="CANCELED">Annulée</MenuItem>
+            </Select>
+          </FormControl>
+        </Box>
 
-        {/* 📊 DataGrid */}
-        <div style={{ height: 600, width: "100%" }}>
-         <DataGrid
+        <Box
+          sx={{
+            height: 600,
+            width: "100%",
+            overflowX: "auto",
+          }}
+        >
+          <DataGrid
             rows={filteredDeliveries}
             columns={columns}
             loading={loading}
             getRowId={(row) => row.id}
-            paginationModel={{ pageSize: 10, page: 0 }} 
-            pageSizeOptions={[10, 20, 50]}              
-            disableRowSelectionOnClick                  
+            paginationModel={{ pageSize: 10, page: 0 }}
+            pageSizeOptions={[10, 20, 50]}
+            disableRowSelectionOnClick
           />
-        </div>
+        </Box>
       </Box>
     </DashboardLayout>
   );
 };
 
 export default AllDeliveriesPage;
+

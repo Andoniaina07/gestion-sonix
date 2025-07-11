@@ -257,7 +257,7 @@ const UserForm: React.FC = () => {
             onClick={() => setChangePasswordOpen(true)}
             startIcon={<LockResetIcon />}
           >
-            Changer mon mot de passe
+            Changer mon propre mot de passe
           </Button>
           <TextField
             label="Rechercher..."
