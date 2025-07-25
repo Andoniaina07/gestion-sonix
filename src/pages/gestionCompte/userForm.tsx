@@ -1,3 +1,4 @@
+// src/pages/users/UserForm.tsx
 import React, { useEffect, useState, useCallback } from "react";
 import {
   Box,
@@ -23,6 +24,7 @@ import {
   getAllUsers,
   saveUser,
   fetchUser,
+  deleteUserAction,
 } from "../../core/actions/userActions";
 import {
   RegisterRequest,
@@ -36,6 +38,7 @@ import { clearUserState } from "../../core/slice/userSlice";
 import { toast } from "react-toastify";
 import VisibilityIcon from "@mui/icons-material/Visibility";
 import EditIcon from "@mui/icons-material/Edit";
+import DeleteIcon from "@mui/icons-material/Delete";
 import ChangePasswordForm from "./ChangePasswordForm";
 import { AnyAction } from "@reduxjs/toolkit";
 import { IMAGE_SERVER } from "../../config/config";
@@ -62,7 +65,6 @@ const UserForm: React.FC = () => {
   const [editingUserId, setEditingUserId] = useState<string | null>(null);
   const [viewDialogOpen, setViewDialogOpen] = useState(false);
   const [changePasswordOpen, setChangePasswordOpen] = useState(false);
-
   const [formUser, setFormUser] = useState<RegisterRequest>({
     email: "",
     password: "",
@@ -72,7 +74,6 @@ const UserForm: React.FC = () => {
     role: RoleType.CUSTOMER,
     profileImage: undefined,
   });
-
   const [imagePreview, setImagePreview] = useState<string>("");
   const [searchTerm, setSearchTerm] = useState("");
   const [paginationModel, setPaginationModel] = useState({ pageSize: 10, page: 0 });
@@ -192,6 +193,19 @@ const UserForm: React.FC = () => {
     setImagePreview("");
   }, [dispatch]);
 
+  const handleDelete = (userId: string) => {
+    if (window.confirm("Êtes-vous sûr de vouloir supprimer cet utilisateur ?")) {
+      dispatch(deleteUserAction(userId)).then((action: AnyAction) => {
+        if (deleteUserAction.fulfilled.match(action)) {
+          toast.success("Utilisateur supprimé !");
+          dispatch(getAllUsers());
+        } else {
+          toast.error("Erreur lors de la suppression.");
+        }
+      });
+    }
+  };
+
   const columns: GridColDef[] = [
     { field: "firstName", headerName: "Prénom", flex: 1 },
     { field: "lastName", headerName: "Nom", flex: 1 },
@@ -217,6 +231,7 @@ const UserForm: React.FC = () => {
           >
             <VisibilityIcon />
           </IconButton>
+
           <IconButton
             color="secondary"
             onClick={() => {
@@ -226,6 +241,13 @@ const UserForm: React.FC = () => {
             }}
           >
             <EditIcon />
+          </IconButton>
+
+          <IconButton
+            color="error"
+            onClick={() => handleDelete(params.row.id)}
+          >
+            <DeleteIcon />
           </IconButton>
         </>
       ),
@@ -245,18 +267,10 @@ const UserForm: React.FC = () => {
         </Typography>
 
         <Box mt={2} mb={2} display="flex" gap={2}>
-          <Button
-            variant="contained"
-            onClick={() => setOpen(true)}
-            startIcon={<PersonAddAltIcon />}
-          >
+          <Button variant="contained" onClick={() => setOpen(true)} startIcon={<PersonAddAltIcon />}>
             Ajouter un utilisateur
           </Button>
-          <Button
-            variant="outlined"
-            onClick={() => setChangePasswordOpen(true)}
-            startIcon={<LockResetIcon />}
-          >
+          <Button variant="outlined" onClick={() => setChangePasswordOpen(true)} startIcon={<LockResetIcon />}>
             Changer mon propre mot de passe
           </Button>
           <TextField

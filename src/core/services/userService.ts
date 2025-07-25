@@ -80,3 +80,7 @@ export const uploadUserImage = async (file: File): Promise<User> => {
   return response.data;
 };
 
+export const deleteUser = async (id: string): Promise<void> => {
+  await api.delete(`/users/${id}`);
+};
+

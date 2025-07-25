@@ -7,7 +7,8 @@ import {
   saveFcmTokenAction,
   uploadUserImageAction,
   fetchUser,
-  saveUser
+  saveUser,
+  deleteUserAction,
 } from "../actions/userActions";
 import { User } from "../models/userModels";
 
@@ -149,6 +150,21 @@ const userSlice = createSlice({
         state.currentUser = action.payload;
       })
       .addCase(uploadUserImageAction.rejected, (state, action) => {
+        state.loading = false;
+        state.error = action.payload as string;
+      })
+
+      // ✅ Delete user
+      .addCase(deleteUserAction.pending, (state) => {
+        state.loading = true;
+        state.error = null;
+      })
+      .addCase(deleteUserAction.fulfilled, (state, action) => {
+        state.loading = false;
+        // Retire l'utilisateur supprimé de la liste
+        state.users = state.users.filter((user) => user.id !== action.meta.arg);
+      })
+      .addCase(deleteUserAction.rejected, (state, action) => {
         state.loading = false;
         state.error = action.payload as string;
       });

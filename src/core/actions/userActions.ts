@@ -15,6 +15,7 @@ import {
   updateUserPassword,
   saveFcmToken,
   uploadUserImage,
+  deleteUser,
 } from "../services/userService";
 
 export const registerUser = createAsyncThunk<User, RegisterRequest>(
@@ -111,6 +112,17 @@ export const uploadUserImageAction = createAsyncThunk<User, File>(
       return await uploadUserImage(file);
     } catch (error: any) {
       return rejectWithValue(error.response?.data?.message || "Erreur de téléversement de l'image");
+    }
+  }
+);
+
+export const deleteUserAction = createAsyncThunk<void, string>(
+  "user/deleteUser",
+  async (id, { rejectWithValue }) => {
+    try {
+      await deleteUser(id);
+    } catch (error: any) {
+      return rejectWithValue(error.response?.data?.message || "Erreur lors de la suppression de l'utilisateur");
     }
   }
 );
