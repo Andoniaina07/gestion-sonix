@@ -1,4 +1,92 @@
-import { createSlice } from "@reduxjs/toolkit";
+// import { createSlice } from "@reduxjs/toolkit";
+// import {
+//   fetchAllDeliveries,
+//   fetchAvailableDeliveries,
+//   fetchMyDeliveries,
+//   fetchDriverDelivery,
+//   adminConfirmDelivery,
+//   driverConfirmDelivery,
+//   changeDeliveryStatus,
+//   sendDeliveryImage,
+//   changeDeliveryPrice,
+// } from "../actions/deliveryActions";
+
+// import { Delivery } from "../models/deliveryModels";
+
+// interface DeliveryState {
+//   deliveries: Delivery[];
+//   available: Delivery[];
+//   myDeliveries: Delivery[];
+//   driverCurrent: Delivery | null;
+//   loading: boolean;
+//   error: string | null;
+// }
+
+// const initialState: DeliveryState = {
+//   deliveries: [],
+//   available: [],
+//   myDeliveries: [],
+//   driverCurrent: null,
+//   loading: false,
+//   error: null,
+// };
+
+// const deliverySlice = createSlice({
+//   name: "deliveries",
+//   initialState,
+//   reducers: {},
+//   extraReducers: (builder) => {
+//     builder
+//       // ALL
+//       .addCase(fetchAllDeliveries.fulfilled, (state, action) => {
+//         state.deliveries = action.payload;
+//       })
+
+//       // AVAILABLE
+//       .addCase(fetchAvailableDeliveries.fulfilled, (state, action) => {
+//         state.available = action.payload;
+//       })
+
+//       // MY
+//       .addCase(fetchMyDeliveries.fulfilled, (state, action) => {
+//         state.myDeliveries = action.payload;
+//       })
+
+//       // DRIVER CURRENT
+//       .addCase(fetchDriverDelivery.fulfilled, (state, action) => {
+//         state.driverCurrent = action.payload;
+//       })
+
+//       // CONFIRMATIONS & STATUS
+//       .addCase(adminConfirmDelivery.fulfilled, () => {})
+//       .addCase(driverConfirmDelivery.fulfilled, () => {})
+//       .addCase(changeDeliveryStatus.fulfilled, () => {})
+//       .addCase(sendDeliveryImage.fulfilled, () => {})
+
+//       // UPDATE PRICE
+//       .addCase(changeDeliveryPrice.fulfilled, (state, action) => {
+//         const updated = action.payload;
+
+//         const index = state.deliveries.findIndex(d => d.id === updated.id);
+//         if (index !== -1) {
+//           state.deliveries[index] = updated;
+//         }
+
+//         const myIndex = state.myDeliveries.findIndex(d => d.id === updated.id);
+//         if (myIndex !== -1) {
+//           state.myDeliveries[myIndex] = updated;
+//         }
+
+//         if (state.driverCurrent?.id === updated.id) {
+//           state.driverCurrent = updated;
+//         }
+//       });
+//   },
+// });
+
+// export default deliverySlice.reducer;
+
+import { createSlice, PayloadAction } from "@reduxjs/toolkit";
 import {
   fetchAllDeliveries,
   fetchAvailableDeliveries,
@@ -10,7 +98,6 @@ import {
   sendDeliveryImage,
   changeDeliveryPrice,
 } from "../actions/deliveryActions";
-
 import { Delivery } from "../models/deliveryModels";
 
 interface DeliveryState {
@@ -37,45 +124,75 @@ const deliverySlice = createSlice({
   reducers: {},
   extraReducers: (builder) => {
     builder
-      // ALL
-      .addCase(fetchAllDeliveries.fulfilled, (state, action) => {
+      // ===== FETCH ALL DELIVERIES =====
+      .addCase(fetchAllDeliveries.pending, (state) => {
+        state.loading = true;
+        state.error = null;
+      })
+      .addCase(fetchAllDeliveries.fulfilled, (state, action: PayloadAction<Delivery[]>) => {
         state.deliveries = action.payload;
+        state.loading = false;
+      })
+      .addCase(fetchAllDeliveries.rejected, (state, action) => {
+        state.loading = false;
+        state.error = action.error.message || "Erreur lors du chargement des livraisons.";
       })
 
-      // AVAILABLE
-      .addCase(fetchAvailableDeliveries.fulfilled, (state, action) => {
+      // ===== FETCH AVAILABLE DELIVERIES =====
+      .addCase(fetchAvailableDeliveries.fulfilled, (state, action: PayloadAction<Delivery[]>) => {
         state.available = action.payload;
       })
 
-      // MY
-      .addCase(fetchMyDeliveries.fulfilled, (state, action) => {
+      // ===== FETCH MY DELIVERIES =====
+      .addCase(fetchMyDeliveries.fulfilled, (state, action: PayloadAction<Delivery[]>) => {
         state.myDeliveries = action.payload;
       })
 
-      // DRIVER CURRENT
-      .addCase(fetchDriverDelivery.fulfilled, (state, action) => {
+      // ===== FETCH DRIVER CURRENT DELIVERY =====
+      .addCase(fetchDriverDelivery.fulfilled, (state, action: PayloadAction<Delivery>) => {
         state.driverCurrent = action.payload;
       })
 
-      // CONFIRMATIONS & STATUS
-      .addCase(adminConfirmDelivery.fulfilled, () => {})
-      .addCase(driverConfirmDelivery.fulfilled, () => {})
-      .addCase(changeDeliveryStatus.fulfilled, () => {})
-      .addCase(sendDeliveryImage.fulfilled, () => {})
+      // ===== ADMIN CONFIRM DELIVERY =====
+      .addCase(adminConfirmDelivery.fulfilled, (state, action: PayloadAction<Delivery>) => {
+        const updated = action.payload;
+        const index = state.deliveries.findIndex((d) => d.id === updated.id);
+        if (index !== -1) state.deliveries[index] = updated;
+      })
 
-      // UPDATE PRICE
-      .addCase(changeDeliveryPrice.fulfilled, (state, action) => {
+      // ===== DRIVER CONFIRM DELIVERY =====
+      .addCase(driverConfirmDelivery.fulfilled, (state, action: PayloadAction<Delivery>) => {
+        const updated = action.payload;
+        const index = state.deliveries.findIndex((d) => d.id === updated.id);
+        if (index !== -1) state.deliveries[index] = updated;
+        if (state.driverCurrent?.id === updated.id) {
+          state.driverCurrent = updated;
+        }
+      })
+
+      // ===== CHANGE DELIVERY STATUS =====
+      .addCase(changeDeliveryStatus.fulfilled, (state, action: PayloadAction<Delivery>) => {
+        const updated = action.payload;
+        const index = state.deliveries.findIndex((d) => d.id === updated.id);
+        if (index !== -1) state.deliveries[index] = updated;
+      })
+
+      // ===== SEND DELIVERY IMAGE =====
+      .addCase(sendDeliveryImage.fulfilled, (state, action: PayloadAction<Delivery>) => {
+        const updated = action.payload;
+        const index = state.deliveries.findIndex((d) => d.id === updated.id);
+        if (index !== -1) state.deliveries[index] = updated;
+      })
+
+      // ===== CHANGE DELIVERY PRICE =====
+      .addCase(changeDeliveryPrice.fulfilled, (state, action: PayloadAction<Delivery>) => {
         const updated = action.payload;
 
-        const index = state.deliveries.findIndex(d => d.id === updated.id);
-        if (index !== -1) {
-          state.deliveries[index] = updated;
-        }
+        const index = state.deliveries.findIndex((d) => d.id === updated.id);
+        if (index !== -1) state.deliveries[index] = updated;
 
-        const myIndex = state.myDeliveries.findIndex(d => d.id === updated.id);
-        if (myIndex !== -1) {
-          state.myDeliveries[myIndex] = updated;
-        }
+        const myIndex = state.myDeliveries.findIndex((d) => d.id === updated.id);
+        if (myIndex !== -1) state.myDeliveries[myIndex] = updated;
 
         if (state.driverCurrent?.id === updated.id) {
           state.driverCurrent = updated;
@@ -85,4 +202,3 @@ const deliverySlice = createSlice({
 });
 
 export default deliverySlice.reducer;
-

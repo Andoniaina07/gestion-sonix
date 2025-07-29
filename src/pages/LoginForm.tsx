@@ -12,7 +12,7 @@ import {
   IconButton,
 } from "@mui/material";
 import { Visibility, VisibilityOff, TwoWheeler } from "@mui/icons-material";
-import { Link, useNavigate } from "react-router-dom";
+import { useNavigate } from "react-router-dom";
 import { useAppDispatch } from "../app/hooks";
 import { login } from "../core/actions/authActions";
 import { LoginRequest } from "../core/models/authModels";

@@ -1,11 +1,9 @@
-// Types de livraison
 export enum DeliveryType {
   STANDARD = 'STANDARD',
   EXPRESS = 'EXPRESS',
   SAME_DAY = 'SAME_DAY',
 }
 
-// Statuts de livraison (techniques, ne pas modifier si utilisés avec le backend)
 export enum DeliveryStatus {
   PENDING = 'PENDING',
   CONFIRMED_ADMIN = 'CONFIRMED_ADMIN',
@@ -16,18 +14,16 @@ export enum DeliveryStatus {
   CANCELLED = 'CANCELLED',
 }
 
-// Libellés en français pour l'affichage
 export const DeliveryStatusLabels: Record<DeliveryStatus, string> = {
-  [DeliveryStatus.PENDING]: 'En attente',
-  [DeliveryStatus.CONFIRMED_ADMIN]: 'Confirmée par l\'admin',
-  [DeliveryStatus.CONFIRMED_DRIVER]: 'Confirmée par le livreur',
-  [DeliveryStatus.PICKED_UP]: 'Récupérée',
-  [DeliveryStatus.IN_TRANSIT]: 'En cours de livraison',
-  [DeliveryStatus.DELIVERED]: 'Livrée',
-  [DeliveryStatus.CANCELLED]: 'Annulée',
+  [DeliveryStatus.PENDING]: "En attente",
+  [DeliveryStatus.CONFIRMED_ADMIN]: "Confirmée par Admin",
+  [DeliveryStatus.CONFIRMED_DRIVER]: "Confirmée par Chauffeur",
+  [DeliveryStatus.PICKED_UP]: "Pris en charge",
+  [DeliveryStatus.IN_TRANSIT]: "En cours de livraison",
+  [DeliveryStatus.DELIVERED]: "Livrée",
+  [DeliveryStatus.CANCELLED]: "Annulée",
 };
 
-// Interface de livraison
 export interface Delivery {
   id: string;
   pickup_address: string;
@@ -50,7 +46,6 @@ export interface Delivery {
   createdAt: string;
 }
 
-// DTO pour mise à jour du statut
 export interface UpdateDeliveryStatusDto {
   status: DeliveryStatus;
   driverId?: string;

@@ -25,10 +25,11 @@ export const getMyDeliveries = async () => {
   return res.data;
 };
 
-export const confirmAdminDelivery = async (id: string) => {
-  const res = await api.patch(`/deliveries/${id}/confirm-admin`);
+export const confirmAdminDelivery = async (id: string, driverId?: string) => {
+  const res = await api.patch(`/deliveries/${id}/confirm-admin`, { driverId });
   return res.data;
 };
+
 
 export const confirmDriverDelivery = async (id: string) => {
   const res = await api.patch(`/deliveries/${id}/confirm-driver`);
