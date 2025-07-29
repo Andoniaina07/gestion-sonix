@@ -55,3 +55,7 @@ export interface UpdateDeliveryStatusDto {
   status: DeliveryStatus;
   driverId?: string;
 }
+
+export interface UpdateDeliveryPriceDto {
+  delivery_price: number;
+}

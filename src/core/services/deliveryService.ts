@@ -1,5 +1,5 @@
 import api from "../../lib/api";
-import { UpdateDeliveryStatusDto } from "../models/deliveryModels";
+import { UpdateDeliveryStatusDto,UpdateDeliveryPriceDto } from "../models/deliveryModels";
 
 export const getAllDeliveries = async () => {
   const res = await api.get("/deliveries");
@@ -42,5 +42,10 @@ export const updateDeliveryStatus = async (id: string, data: UpdateDeliveryStatu
 
 export const getDriverCurrentDelivery = async () => {
   const res = await api.get("/deliveries/driver-delivery");
+  return res.data;
+};
+
+export const updateDeliveryPrice = async (id: string, data: UpdateDeliveryPriceDto) => {
+  const res = await api.put(`/deliveries/${id}`, data);
   return res.data;
 };

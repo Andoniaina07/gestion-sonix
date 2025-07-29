@@ -39,9 +39,8 @@ const LoginForm = () => {
 
   const handleClickShowPassword = () => setShowPassword((show) => !show);
 
-  const handleMouseDownPassword = (
-    e: React.MouseEvent<HTMLButtonElement>
-  ) => e.preventDefault();
+  const handleMouseDownPassword = (e: React.MouseEvent<HTMLButtonElement>) =>
+    e.preventDefault();
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -149,7 +148,7 @@ const LoginForm = () => {
             Se connecter
           </Button>
 
-          <Typography variant="body2" align="center" sx={{ mt: 2 }}>
+          {/* <Typography variant="body2" align="center" sx={{ mt: 2 }}>
             Pas encore de compte ?{" "}
             <Link
               to="/register"
@@ -157,7 +156,7 @@ const LoginForm = () => {
             >
               S'inscrire
             </Link>
-          </Typography>
+          </Typography> */}
         </form>
       </Box>
     </Box>

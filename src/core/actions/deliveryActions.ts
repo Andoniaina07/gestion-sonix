@@ -8,8 +8,13 @@ import {
   uploadDeliveryImage,
   updateDeliveryStatus,
   getDriverCurrentDelivery,
+  updateDeliveryPrice
 } from "../../core/services/deliveryService";
-import { UpdateDeliveryStatusDto } from "../..//core/models/deliveryModels";
+
+import {
+  UpdateDeliveryStatusDto,
+  UpdateDeliveryPriceDto
+} from "../../core/models/deliveryModels";
 
 export const fetchAllDeliveries = createAsyncThunk("deliveries/fetchAll", getAllDeliveries);
 export const fetchAvailableDeliveries = createAsyncThunk("deliveries/fetchAvailable", getAvailableDeliveries);
@@ -43,3 +48,11 @@ export const changeDeliveryStatus = createAsyncThunk(
     return await updateDeliveryStatus(id, data);
   }
 );
+
+export const changeDeliveryPrice = createAsyncThunk(
+  "deliveries/updatePrice",
+  async ({ id, data }: { id: string; data: UpdateDeliveryPriceDto }) => {
+    return await updateDeliveryPrice(id, data);
+  }
+);
+

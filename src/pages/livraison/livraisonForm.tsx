@@ -17,6 +17,7 @@ import {
   TextField,
   IconButton,
   Tooltip,
+  CircularProgress,
 } from "@mui/material";
 import { DataGrid, GridColDef } from "@mui/x-data-grid";
 import VisibilityIcon from "@mui/icons-material/Visibility";
@@ -25,7 +26,7 @@ import {
   fetchAllDeliveries,
   adminConfirmDelivery,
   driverConfirmDelivery,
-  // updateDelivery,
+  changeDeliveryPrice,
 } from "../../core/actions/deliveryActions";
 import DashboardLayout from "../dasboard/DashboardLayout";
 import { showSnackbar } from "../../core/slice/snackbarSlice";
@@ -39,6 +40,8 @@ const AllDeliveriesPage: React.FC = () => {
   const [confirmTarget, setConfirmTarget] = useState<{ id: string; type: "ADMIN" | "DRIVER" } | null>(null);
   const [infoDialogOpen, setInfoDialogOpen] = useState(false);
   const [editForm, setEditForm] = useState<any>({});
+  const [priceError, setPriceError] = useState<string | null>(null);
+  const [saving, setSaving] = useState(false);
 
   const theme = useTheme();
   const isSmallScreen = useMediaQuery(theme.breakpoints.down("sm"));
@@ -69,23 +72,43 @@ const AllDeliveriesPage: React.FC = () => {
   };
 
   const handleOpenEditDialog = (delivery: any) => {
-    setEditForm(delivery);
+    setEditForm({
+      id: delivery.id,
+      recipient_name: delivery.recipient_name,
+      recipient_phone: delivery.recipient_phone,
+      pickup_address: delivery.pickup_address,
+      delivery_address: delivery.delivery_address,
+      delivery_price: delivery.delivery_price,
+    });
+    setPriceError(null);
     setInfoDialogOpen(true);
   };
 
   const handleEditChange = (field: string, value: any) => {
     setEditForm((prev: any) => ({ ...prev, [field]: value }));
+    if (field === "delivery_price") {
+      setPriceError(null);
+    }
   };
 
   const handleSaveEdit = async () => {
-    // try {
-    //   await dispatch(updateDelivery({ id: editForm.id, data: editForm })).unwrap();
-    //   dispatch(fetchAllDeliveries());
-    //   dispatch(showSnackbar({ message: "Livraison modifiée", type: "success" }));
-    //   setInfoDialogOpen(false);
-    // } catch (err) {
-    //   dispatch(showSnackbar({ message: "Erreur lors de la modification", type: "error" }));
-    // }
+    const price = parseFloat(editForm.delivery_price);
+    if (isNaN(price) || price < 0) {
+      setPriceError("Veuillez saisir un prix valide et positif");
+      return;
+    }
+    setPriceError(null);
+    setSaving(true);
+    try {
+      await dispatch(changeDeliveryPrice({ id: editForm.id, data: { delivery_price: price } })).unwrap();
+      dispatch(fetchAllDeliveries());
+      dispatch(showSnackbar({ message: "Prix mis à jour", type: "success" }));
+      setInfoDialogOpen(false);
+    } catch {
+      dispatch(showSnackbar({ message: "Erreur lors de la mise à jour", type: "error" }));
+    } finally {
+      setSaving(false);
+    }
   };
 
   const filteredDeliveries =
@@ -202,7 +225,7 @@ const AllDeliveriesPage: React.FC = () => {
         )}
       </Box>
 
-      {/* 📦 Dialog de Confirmation */}
+      {/* Dialog de Confirmation */}
       <Dialog open={confirmDialogOpen} onClose={() => setConfirmDialogOpen(false)}>
         <DialogTitle>Confirmation</DialogTitle>
         <DialogContent>
@@ -216,7 +239,7 @@ const AllDeliveriesPage: React.FC = () => {
         </DialogActions>
       </Dialog>
 
-      {/* 📝 Popup "Voir" avec édition */}
+      {/* Popup Voir + Édition */}
       <Dialog open={infoDialogOpen} onClose={() => setInfoDialogOpen(false)} maxWidth="sm" fullWidth>
         <DialogTitle>Modifier la livraison</DialogTitle>
         <DialogContent dividers>
@@ -251,13 +274,18 @@ const AllDeliveriesPage: React.FC = () => {
               value={editForm.delivery_price || ""}
               onChange={(e) => handleEditChange("delivery_price", e.target.value)}
               fullWidth
+              error={!!priceError}
+              helperText={priceError || ""}
+              disabled={saving}
             />
           </Stack>
         </DialogContent>
         <DialogActions>
-          <Button onClick={() => setInfoDialogOpen(false)}>Annuler</Button>
-          <Button onClick={handleSaveEdit} variant="contained" color="primary">
-            Enregistrer
+          <Button onClick={() => setInfoDialogOpen(false)} disabled={saving}>
+            Annuler
+          </Button>
+          <Button onClick={handleSaveEdit} variant="contained" color="primary" disabled={saving}>
+            {saving ? <CircularProgress size={24} color="inherit" /> : "Enregistrer"}
           </Button>
         </DialogActions>
       </Dialog>

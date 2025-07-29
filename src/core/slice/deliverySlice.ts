@@ -8,7 +8,9 @@ import {
   driverConfirmDelivery,
   changeDeliveryStatus,
   sendDeliveryImage,
+  changeDeliveryPrice,
 } from "../actions/deliveryActions";
+
 import { Delivery } from "../models/deliveryModels";
 
 interface DeliveryState {
@@ -59,8 +61,28 @@ const deliverySlice = createSlice({
       .addCase(adminConfirmDelivery.fulfilled, () => {})
       .addCase(driverConfirmDelivery.fulfilled, () => {})
       .addCase(changeDeliveryStatus.fulfilled, () => {})
-      .addCase(sendDeliveryImage.fulfilled, () => {});
+      .addCase(sendDeliveryImage.fulfilled, () => {})
+
+      // UPDATE PRICE
+      .addCase(changeDeliveryPrice.fulfilled, (state, action) => {
+        const updated = action.payload;
+
+        const index = state.deliveries.findIndex(d => d.id === updated.id);
+        if (index !== -1) {
+          state.deliveries[index] = updated;
+        }
+
+        const myIndex = state.myDeliveries.findIndex(d => d.id === updated.id);
+        if (myIndex !== -1) {
+          state.myDeliveries[myIndex] = updated;
+        }
+
+        if (state.driverCurrent?.id === updated.id) {
+          state.driverCurrent = updated;
+        }
+      });
   },
 });
 
 export default deliverySlice.reducer;
+
