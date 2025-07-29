@@ -1,4 +1,3 @@
-// src/pages/users/UserForm.tsx
 import React, { useEffect, useState, useCallback } from "react";
 import {
   Box,
@@ -289,17 +288,36 @@ const UserForm: React.FC = () => {
           />
         </Box>
 
-        <DataGrid
-          rows={filteredUsers}
-          columns={columns}
-          getRowId={(row) => row.id}
-          paginationModel={paginationModel}
-          onPaginationModelChange={setPaginationModel}
-          pageSizeOptions={[5, 10, 20]}
-          autoHeight
-          disableRowSelectionOnClick
-          sx={{ backgroundColor: "#fff", borderRadius: 2 }}
-        />
+        <Box>
+          {loading ? (
+            <Box
+              sx={{
+                display: "flex",
+                justifyContent: "center",
+                alignItems: "center",
+                height: 300,
+                backgroundColor: "#fff",
+                borderRadius: 2,
+                mt: 2,
+                mb: 2,
+              }}
+            >
+              <CircularProgress />
+            </Box>
+          ) : (
+            <DataGrid
+              rows={filteredUsers}
+              columns={columns}
+              getRowId={(row) => row.id}
+              paginationModel={paginationModel}
+              onPaginationModelChange={setPaginationModel}
+              pageSizeOptions={[5, 10, 20]}
+              autoHeight
+              disableRowSelectionOnClick
+              sx={{ backgroundColor: "#fff", borderRadius: 2 }}
+            />
+          )}
+        </Box>
 
         {/* ➕ MODAL AJOUT / MODIFICATION */}
         <Dialog open={open} onClose={handleClose} fullWidth maxWidth="sm">
