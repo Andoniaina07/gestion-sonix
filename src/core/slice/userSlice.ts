@@ -118,13 +118,17 @@ const userSlice = createSlice({
       .addCase(changePassword.pending, (state) => {
         state.loading = true;
         state.error = null;
+        state.success = false; // reset success au début de l'action
       })
       .addCase(changePassword.fulfilled, (state) => {
         state.loading = false;
+        state.success = true;  // succès
+        state.error = null;
       })
       .addCase(changePassword.rejected, (state, action) => {
         state.loading = false;
-        state.error = action.payload as string;
+        state.success = false; // pas de succès
+        state.error = action.payload as string || "Erreur inconnue";
       })
 
       // 👉 Save FCM token

@@ -205,6 +205,11 @@ const UserForm: React.FC = () => {
     }
   };
 
+  // Nouvelle fonction stable pour fermer le modal de changement de mot de passe
+  const handleChangePasswordClose = useCallback(() => {
+    setChangePasswordOpen(false);
+  }, []);
+
   const columns: GridColDef[] = [
     { field: "firstName", headerName: "Prénom", flex: 1 },
     { field: "lastName", headerName: "Nom", flex: 1 },
@@ -375,10 +380,10 @@ const UserForm: React.FC = () => {
         </Dialog>
 
         {/* 🔒 MODAL CHANGEMENT DE MOT DE PASSE */}
-        <Dialog open={changePasswordOpen} onClose={() => setChangePasswordOpen(false)} fullWidth maxWidth="sm">
+        <Dialog open={changePasswordOpen} onClose={handleChangePasswordClose} fullWidth maxWidth="sm">
           <DialogTitle>Changer mon mot de passe</DialogTitle>
           <DialogContent dividers>
-            <ChangePasswordForm onClose={() => setChangePasswordOpen(false)} />
+            <ChangePasswordForm onClose={handleChangePasswordClose} />
           </DialogContent>
         </Dialog>
       </Box>
